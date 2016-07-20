@@ -95,6 +95,7 @@ IonGDB = {
 	betaWarning = true,
 
 	animate = true,
+	showmmb = true,
 }
 
 --CharacterDB?
@@ -121,7 +122,7 @@ IonCDB = {
 
 	fix07312012 = false,
 	fix03312014 = false,
-	
+
 	firstRun = true,
 
 	debug = {},
@@ -266,6 +267,15 @@ local options = {
 					set = function() ION:BlizzBar() end,
 					get = function() return IonGDB.mainbar end,
 					width = "full",
+				},
+				MMbutton = {
+					order = 2,
+					name = "Display Minimap Button",
+					desc = "Toggles the minimap button.",
+					type = "toggle",
+					set =  function() ION:toggleMMB() end,
+					get = function() return IonGDB.showmmb end,
+					width = "full"
 				},
 				--[[
 				DraenorBar = {
@@ -465,7 +475,7 @@ local defaults = {
 
 			fix07312012 = false,
 			fix03312014 = false,
-			
+
 			firstRun = true,
 
 			debug = {},
@@ -604,7 +614,7 @@ end
 
 
 --- Scans Character Spell Book and creates a table of all known spells.  This table is used to refrence macro spell info to generate tooltips and cooldowns.
----	If a spell is not displaying its tooltip or cooldown, then the spell in the macro probably is not in the database 
+---	If a spell is not displaying its tooltip or cooldown, then the spell in the macro probably is not in the database
 function ION:UpdateSpellIndex()
 	local sIndexMax = 0
 
@@ -681,7 +691,7 @@ function ION:UpdateSpellIndex()
 	end
 
 	-- maybe a temp fix to get the Sunfire spell to show for balance druids
-	--May not be needed for 6.0 recheck 
+	--May not be needed for 6.0 recheck
 	--[[
 	if (ION.class == "DRUID") then
 
@@ -822,7 +832,7 @@ function ION:UpdatePetSpellIndex()
 
 			if (icon and not icons[icon]) then
 				ICONS[#ICONS+1] = icon; icons[icon] = true
-			end			
+			end
 			--if (icon and not icons[icon:upper()]) then
 			--	ICONS[#ICONS+1] = icon:upper(); icons[icon:upper()] = true
 			--end
@@ -910,10 +920,10 @@ end
 
 
 --- Compiles a list of battle pets & mounts a player has.  This table is used to refrence macro spell info to generate tooltips and cooldowns.
----	If a companion is not displaying its tooltip or cooldown, then the item in the macro probably is not in the database 
+---	If a companion is not displaying its tooltip or cooldown, then the item in the macro probably is not in the database
 function ION:UpdateCompanionData()
 
-	--_G.C_PetJournal.ClearAllPetSourcesFilter()  
+	--_G.C_PetJournal.ClearAllPetSourcesFilter()
 	--_G.C_PetJournal.ClearAllPetTypesFilter()
 
 	_G.C_PetJournal.ClearSearchFilter()
@@ -924,7 +934,7 @@ function ION:UpdateCompanionData()
 	_G.C_PetJournal.SetAllPetSourcesChecked(true)
 	_G.C_PetJournal.SetAllPetTypesChecked(true)
 	local numpet = select(1, C_PetJournal.GetNumPets())
-	
+
 	for i=1,numpet do
 
 		local petID, speciesID, owned, customName, level, favorite, isRevoked, speciesName, icon, petType, companionID, tooltip, description, isWild, canBattle, isTradeable, isUnique, obtainable = C_PetJournal.GetPetInfoByIndex(i)
@@ -1459,6 +1469,14 @@ function ION:MinimapMenuClose()
 	IonMinimapButton.popup:Hide()
 end
 
+function ION:toggleMMB()
+	if IonGDB.showmmb then
+		IonMinimapButton:Hide()
+	else
+		IonMinimapButton:Show()
+	end
+	IonGDB.showmmb = not IonGDB.showmmb
+end
 
 function ION.SubFramePlainBackdrop_OnLoad(self)
 	self:SetBackdrop({
@@ -2150,9 +2168,9 @@ local function control_OnEvent(self, event, ...)
 				ION.OpDep = true
 			end
 		end
-		
+
 		if (not fix03312014) then
-		
+
 		end
 
 		GDB = IonGDB; CDB = IonCDB; SPEC = IonSpec
@@ -2236,6 +2254,9 @@ local function control_OnEvent(self, event, ...)
 		--Fix for Titan causing the Main Bar to not be hidden
 		if (IsAddOnLoaded("Titan")) then TitanUtils_AddonAdjust("MainMenuBar", true) end
 		ION:ToggleBlizzBar(GDB.mainbar)
+		if not GDB.showmmb then
+			IonMinimapButton:Hide()
+		end
 
 		CDB.fix07312012 = true
 
@@ -2269,7 +2290,7 @@ local function control_OnEvent(self, event, ...)
 		ION.level = UnitLevel("player")
 
 	elseif ( event == "TOYS_UPDATED" )then
-		
+
 		if not ToyBox:IsShown() then print("TVS"); ION:UpdateToyData() end
 	end
 
@@ -2370,7 +2391,7 @@ end
 		IonProfilesDB["Saved"] = CopyTable(IonGDB)
 	end
 
-	if not self.db.char.firstrun then 
+	if not self.db.char.firstrun then
 		self.db.profile["IonCDB"] = CopyTable(IonCDB)
 		self.db.profile["IonGDB"] = CopyTable(IonProfilesDB["Saved"])
 
