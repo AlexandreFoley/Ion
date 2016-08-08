@@ -554,7 +554,8 @@ function BUTTON:SetTimer(cd, start, duration, enable, timer, color1, color2, cdA
 
 		cd:SetAlpha(1)
 
-		CooldownFrame_SetTimer(cd, start, duration, enable)
+		CooldownFrame_Set(cd, start, duration, enable)
+		--CooldownFrame_SetTimer(cd, start, duration, enable)
 
 		if (duration >= GDB.timerLimit) then
 
@@ -580,7 +581,7 @@ function BUTTON:SetTimer(cd, start, duration, enable, timer, color1, color2, cdA
 			cd.duration = 1
 		end
 	else
-		cd.duration = 0; cd.start = 0; CooldownFrame_SetTimer(cd, 0, 0, 0)
+		cd.duration = 0; cd.start = 0;_G.CooldownFrame_Set(cd, 0, 0, 0)--_G.CooldownFrame_SetTimer(cd, 0, 0, 0)
 	end
 end
 
@@ -1198,7 +1199,7 @@ function BUTTON:MACRO_SetSpellCooldown(spell)
 
 	if (sIndex[spell]) then
 		spell_id = sIndex[spell].spellID
-		local DraenorZoneAbilityID = DraenorZoneAbilityFrame.SpellButton.currentSpellID
+		local DraenorZoneAbilityID = ZoneAbilityFrame.SpellButton.currentSpellID
 		local FairyFireID = 770
 		local FairySwarmID = 102355
 		local GarrisonAbilityID = 161691
@@ -1638,7 +1639,8 @@ function BUTTON:MACRO_ACTIVE_TALENT_GROUP_CHANGED(...)
 	local spec
 
 	if (self.dualSpec) then
-		spec = select(2,...)
+		--spec = select(2,...)
+		spec = GetSpecialization()
 	else
 		spec = 1
 	end
@@ -1776,39 +1778,42 @@ function BUTTON:MACRO_PlaceMacro()
 end
 
 
-function BUTTON:MACRO_PlaceSpell(action1, action2, hasAction)
-	local _, modifier, spell, subName, spellID, texture = " "
+function BUTTON:MACRO_PlaceSpell(action1, action2, spellID, hasAction)
+	local _, modifier, spell, subName, texture = " "
 
 	if (action1 == 0) then
-		return
+		-- I am unsure under what conditions (if any) we wouldn't have a spell ID
+		if not spellID or spellID == 0 then
+			return
+		end
 	else
 		spell, _ = GetSpellBookItemName(action1, action2)
 		_, spellID = GetSpellBookItemInfo(action1, action2)
-		local spellInfoName , subName, icon, castTime, minRange, maxRange= GetSpellInfo(spellID)
-
-		if AlternateSpellNameList[spellID] then
-			self.data.macro_Text = self:AutoWriteMacro(spellInfoName)
-			self.data.macro_Auto = spellInfoName..";"
-		else
-			self.data.macro_Text = self:AutoWriteMacro(spell, subName)
-			self.data.macro_Auto = spell..";"..subName
-		end
-
-		self.data.macro_Icon = false
-		self.data.macro_Name = ""
-		self.data.macro_Watch = false
-		self.data.macro_Equip = false
-		self.data.macro_Note = ""
-		self.data.macro_UseNote = false
-
-		if (not self.cursor) then
-			self:SetType(true)
-		end
-
-		MacroDrag[0] = false
-
-		ClearCursor(); SetCursor(nil)
 	end
+	local spellInfoName , subName, icon, castTime, minRange, maxRange= GetSpellInfo(spellID)
+
+	if AlternateSpellNameList[spellID] or not spell then
+		self.data.macro_Text = self:AutoWriteMacro(spellInfoName)
+		self.data.macro_Auto = spellInfoName..";"
+	else
+		self.data.macro_Text = self:AutoWriteMacro(spell, subName)
+		self.data.macro_Auto = spell..";"..subName
+	end
+
+	self.data.macro_Icon = false
+	self.data.macro_Name = ""
+	self.data.macro_Watch = false
+	self.data.macro_Equip = false
+	self.data.macro_Note = ""
+	self.data.macro_UseNote = false
+
+	if (not self.cursor) then
+		self:SetType(true)
+	end
+
+	MacroDrag[0] = false
+
+	ClearCursor(); SetCursor(nil)
 end
 
 
@@ -1942,7 +1947,7 @@ function BUTTON:MACRO_PlaceMount(action1, action2, hasAction)
 	else
 		--The Summon Random Mount from the Mount Journal 
 		if action1 == 268435455 then
-			self.data.macro_Text = "#autowrite\n/run C_MountJournal.Summon(0);"
+			self.data.macro_Text = "#autowrite\n/run C_MountJournal.SummonByID(0);"
 			self.data.macro_Auto = "Random Mount;"
 			self.data.macro_Icon = "Interface\\ICONS\\ACHIEVEMENT_GUILDPERK_MOUNTUP"
 			self.data.macro_Name = "Random Mount"
@@ -2160,7 +2165,7 @@ end
 function BUTTON:MACRO_OnReceiveDrag(preclick)
 	if (InCombatLockdown()) then return end
 
-	local cursorType, action1, action2, ID = GetCursorInfo()
+	local cursorType, action1, action2, spellID = GetCursorInfo()
 
 	--for i=1,select("#",GetCursorInfo()) do
 	--	print(i..": "..select(i,GetCursorInfo()))
@@ -2186,7 +2191,7 @@ function BUTTON:MACRO_OnReceiveDrag(preclick)
 		currMacro.texture = texture
 	end
 
-	if  (action1 == 0) then
+	if  (action1 == 0 and cursorType ~= "spell") then
 		-- do nothing for now
 	else
 
@@ -2195,7 +2200,7 @@ function BUTTON:MACRO_OnReceiveDrag(preclick)
 			self:MACRO_PlaceMacro(); PlaySound("igSpellBookSpellIconDrop")
 
 		elseif (cursorType == "spell") then
-			self:MACRO_PlaceSpell(action1, action2, self:MACRO_HasAction())
+			self:MACRO_PlaceSpell(action1, action2, spellID, self:MACRO_HasAction())
 
 		elseif (cursorType == "item") then
 			self:MACRO_PlaceItem(action1, action2, self:MACRO_HasAction())
@@ -2353,7 +2358,7 @@ end
 function BUTTON:MACRO_SetSpellTooltip(spell)
 	if (sIndex[spell]) then
 		local spell_id = sIndex[spell].spellID
-		local draenor_id = DraenorZoneAbilityFrame.SpellButton.currentSpellID
+		local draenor_id = ZoneAbilityFrame.SpellButton.currentSpellID
 
 		if spell_id == 161691 and draenor_id then spell_id = draenor_id end
 
@@ -2910,7 +2915,8 @@ end
 
 function BUTTON:GetSpec()
 	if self.dualSpec then
-		return GetActiveSpecGroup()
+		--return GetActiveSpecGroup()
+		return GetSpecialization()
 	else
 		return 1
 	end
@@ -2996,7 +3002,13 @@ function BUTTON:LoadData(spec, state)
 		end
 
 		if (not self.CDB[id]) then
-			self.CDB[id] = { [1] = { homestate = CopyTable(stateData) }, [2] = { homestate = CopyTable(stateData) } }
+			self.CDB[id] = {}
+		end
+
+		for i=1,4 do
+			if (not self.CDB[id][i]) then
+				self.CDB[id][i] = { homestate = CopyTable(stateData) }
+			end
 		end
 
 		if (not self.CDB[id].keys) then
