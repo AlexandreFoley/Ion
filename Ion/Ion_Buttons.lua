@@ -249,6 +249,16 @@ end
 
 local cou_distance, cou_radius, cou_timer, cou_speed, cou_degree, cou_x, cou_y, cou_position
 
+--Button to cover the world map to keep the macro icon from being overwritten by the default world cursor
+--[[
+local drag_button_canvas = CreateFrame("Button","mybutton",UIParent)
+drag_button_canvas:SetAllPoints()
+drag_button_canvas:SetFrameStrata("LOW")
+drag_button_canvas:SetFrameLevel(0)
+--drag_button_canvas:EnableMouse(false)
+drag_button_canvas:Hide()
+]]--
+
 local function controlOnUpdate(self, elapsed)
 	for i in next,autoCast.timers do
 
@@ -380,7 +390,8 @@ local function controlOnUpdate(self, elapsed)
 	end
 
 	if (MacroDrag[0]) then
-		SetCursor(MacroDrag.texture)
+		local texture_path =GetFileName(MacroDrag.texture)
+		SetCursor(texture_path)
 	end
 end
 
@@ -541,7 +552,8 @@ local function checkCursor(self, button)
 			ION:ToggleButtonGrid(nil, true)
 		else
 
-			SetCursor(MacroDrag.texture)
+			local texture_path =GetFileName(MacroDrag.texture)
+			SetCursor(texture_path)
 
 			ION:ToggleButtonGrid(true)
 		end
@@ -845,7 +857,7 @@ function BUTTON:MACRO_SetItemIcon(item)
 			self.iconframeicon:SetTexture("INTERFACE\\ICONS\\INV_MISC_QUESTIONMARK")
 		end
 
-	elseif (#self.data.macro_Icon > 0) then
+	elseif (type(self.data.macro_Icon) == "string" and #self.data.macro_Icon > 0) then
 
 		if (self.data.macro_Icon == "BLANK") then
 			self.iconframeicon:SetTexture("")
@@ -1199,7 +1211,7 @@ function BUTTON:MACRO_SetSpellCooldown(spell)
 
 	if (sIndex[spell]) then
 		spell_id = sIndex[spell].spellID
-		local DraenorZoneAbilityID = ZoneAbilityFrame.SpellButton.currentSpellID
+		local ZoneAbilityID = ZoneAbilityFrame.SpellButton.currentSpellID
 		local FairyFireID = 770
 		local FairySwarmID = 102355
 		local GarrisonAbilityID = 161691
@@ -1213,7 +1225,7 @@ function BUTTON:MACRO_SetSpellCooldown(spell)
 			end
 		end
 --Needs work
-		if (spell_id == GarrisonAbilityID and DraenorZoneAbilityID) then spell_id = DraenorZoneAbilityID end
+		if (spell_id == GarrisonAbilityID and ZoneAbilityID) then spell_id = ZoneAbilityID end
 
 		if (morphSpells[spell_id]) then
 			spell_id = morphSpells[spell_id]
@@ -1772,7 +1784,7 @@ function BUTTON:MACRO_PlaceMacro()
 	end
 
 	MacroDrag[0] = false
-	ClearCursor(); SetCursor(nil)
+	ClearCursor(); SetCursor(nil); --drag_button_canvas:Hide()
 	self:UpdateFlyout()
 	ION:ToggleButtonGrid(nil, true)
 end
@@ -1813,7 +1825,7 @@ function BUTTON:MACRO_PlaceSpell(action1, action2, spellID, hasAction)
 
 	MacroDrag[0] = false
 
-	ClearCursor(); SetCursor(nil)
+	ClearCursor(); SetCursor(nil); --drag_button_canvas:Hide()
 end
 
 
@@ -1839,7 +1851,7 @@ function BUTTON:MACRO_PlaceItem(action1, action2, hasAction)
 	end
 
 	MacroDrag[0] = false
-	ClearCursor(); SetCursor(nil)
+	ClearCursor(); SetCursor(nil); --drag_button_canvas:Hide()
 end
 
 
@@ -1855,7 +1867,7 @@ function BUTTON:MACRO_PlaceBlizzMacro(action1)
 			self.data.macro_Text = body
 			self.data.macro_Name = name
 			self.data.macro_Watch = name
-			self.data.macro_Icon = icon:upper()
+			self.data.macro_Icon = icon
 		else
 			self.data.macro_Text = ""
 			self.data.macro_Name = ""
@@ -1874,7 +1886,7 @@ function BUTTON:MACRO_PlaceBlizzMacro(action1)
 
 		MacroDrag[0] = false
 
-		ClearCursor(); SetCursor(nil)
+		ClearCursor(); SetCursor(nil); --drag_button_canvas:Hide()
 	end
 end
 
@@ -1889,7 +1901,7 @@ function BUTTON:MACRO_PlaceBlizzEquipSet(action1)
 
 			self.data.macro_Text = "/equipset "..action1
 			self.data.macro_Equip = action1
-			self.data.macro_Icon = iIndex[icon:upper()] or "INTERFACE\\ICONS\\"..icon:upper()
+			self.data.macro_Icon = iIndex[icon] or "INTERFACE\\ICONS\\"..icon:upper()
 		else
 			self.data.macro_Text = ""
 			self.data.macro_Equip = false
@@ -1908,7 +1920,7 @@ function BUTTON:MACRO_PlaceBlizzEquipSet(action1)
 
 		MacroDrag[0] = false
 
-		ClearCursor(); SetCursor(nil)
+		ClearCursor(); SetCursor(nil); --drag_button_canvas:Hide()
 	end
 end
 
@@ -1972,7 +1984,7 @@ function BUTTON:MACRO_PlaceMount(action1, action2, hasAction)
 		MacroDrag[0] = false
 		CurrentMountSpellID = nil
 
-		ClearCursor(); SetCursor(nil)
+		ClearCursor(); SetCursor(nil); --drag_button_canvas:Hide()
 	end
 end
 
@@ -2006,7 +2018,7 @@ function BUTTON:MACRO_PlaceCompanion(action1, action2, hasAction)
 
 		MacroDrag[0] = false
 
-		ClearCursor(); SetCursor(nil)
+		ClearCursor(); SetCursor(nil); --drag_button_canvas:Hide()
 	end
 end
 
@@ -2065,7 +2077,7 @@ function BUTTON:MACRO_PlaceFlyout(action1, action2, hasAction)
 
 		MacroDrag[0] = false
 
-		ClearCursor(); SetCursor(nil)
+		ClearCursor(); SetCursor(nil); --drag_button_canvas:Hide()
 	end
 end
 
@@ -2093,7 +2105,7 @@ function BUTTON:MACRO_PlaceBattlePet(action1, action2, hasAction)
 
 		MacroDrag[0] = false
 
-		ClearCursor(); SetCursor(nil)
+		ClearCursor(); SetCursor(nil); --drag_button_canvas:Hide()
 	end
 end
 
@@ -2122,7 +2134,8 @@ function BUTTON:MACRO_PickUpMacro()
 			end
 
 			wipe(currMacro)
-			SetCursor(MacroDrag.texture)
+			local texture_path =GetFileName(MacroDrag.texture)
+			SetCursor(texture_path)
 
 		elseif (self:MACRO_HasAction()) then
 			MacroDrag[0] = self:MACRO_GetDragAction()
@@ -2156,7 +2169,9 @@ function BUTTON:MACRO_PickUpMacro()
 
 			self:SetType(true)
 
-			SetCursor(MacroDrag.texture)
+			local texture_path =GetFileName(MacroDrag.texture)
+			SetCursor(texture_path)
+			--drag_button_canvas:Show()
 		end
 	end
 end
@@ -2358,9 +2373,9 @@ end
 function BUTTON:MACRO_SetSpellTooltip(spell)
 	if (sIndex[spell]) then
 		local spell_id = sIndex[spell].spellID
-		local draenor_id = ZoneAbilityFrame.SpellButton.currentSpellID
+		local zoneability_id = ZoneAbilityFrame.SpellButton.currentSpellID
 
-		if spell_id == 161691 and draenor_id then spell_id = draenor_id end
+		if spell_id == 161691 and zoneability_id then spell_id = zoneability_id end
 
 		if (morphSpells[spell_id]) then
 			if (self.UberTooltips) then
