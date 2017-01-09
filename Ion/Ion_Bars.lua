@@ -1002,7 +1002,7 @@ end
 function BAR:SetPosition()
 
 	if (self.gdata.snapToPoint and self.gdata.snapToFrame) then
-		self:StickToPoint(_G[self.gdata.snapToFrame], self.gdata.snapToPoint, self.gdata.padH, self.gdata.padV)
+		self:StickToPoint(_G[self.gdata.snapToFrame], self.gdata.snapToPoint, self.gdata.padH-5, self.gdata.padV-2)
 	else
 
 		local point, x, y = self.gdata.point, self.gdata.x, self.gdata.y
@@ -1255,7 +1255,7 @@ function BAR:SetRemap_Paged()
 
 end
 
-local druidForms = { [1066] = true, [40120] = true, [783] = true, [114282] = true } -- aquatic, flight, travel ,treant 
+local druidForms = { [1066] = true, [40120] = true, [783] = true, [114282] = true, [210053]=true } -- aquatic, flight, travel ,treant, stag
 
 function BAR:SetRemap_Stance()
 
@@ -1460,7 +1460,7 @@ function BAR:OnDragStop(...)
 
 		if (not point and self.gdata.snapTo and bar.gdata.snapTo and self ~= bar) then
 
-			point = self:Stick(bar, GDB.snapToTol, self.gdata.padH, self.gdata.padV)
+			point = self:Stick(bar, GDB.snapToTol, self.gdata.padH-5, self.gdata.padV-2)
 
 			if (point) then
 				self.gdata.snapToPoint = point
