@@ -389,7 +389,7 @@ function BUTTON:filter_mount(data)
 				end
 			end
 		end
-		
+
 	end
 	RemoveExclusions(data)
 end
@@ -661,7 +661,7 @@ function BUTTON:Flyout_UpdateButtons(init)
 		end
 
 		if (data) then
-			for spell, source in keySort(data) do 
+			for spell, source in keySort(data) do
 				button = self:Flyout_GetButton()
 
 				if (source == "spell" or source =="blizz") then
@@ -1251,7 +1251,7 @@ local function updateAnchors(self, elapsed)
 			--collectgarbage() not really needed, but some users complain about memory usage and if they go wild in changing
 			--their inventory often and have an item-based flyout then see the huge memory usage spike, they will holler
 			--without this call, the Lua garbage collector takes care of the garbage in short time, but a user watching will see it
-			self:Hide(); collectgarbage()
+			self:Hide(); --collectgarbage()
 		end
 	end
 end
@@ -1423,7 +1423,7 @@ local function controlOnEvent(self, event, ...)
 	elseif (event == "PLAYER_LOGIN") then
 		--f.TOYS_UPDATED() -- update toy cache
 		f.CacheBags()
-	
+
 	elseif (event == "PLAYER_ENTERING_WORLD" and not PEW) then
 		PEW = true
 
